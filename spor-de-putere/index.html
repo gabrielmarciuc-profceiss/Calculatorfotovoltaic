@@ -300,10 +300,11 @@ h1{font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:4px;}
 // DEFINIȚIA CELOR 13 DOCUMENTE — clasificate conform cerinței user-ului
 // ═══════════════════════════════════════════════════════════════════════════
 const DOCS_DEF = [
-  // 1 — EDITABIL (formular care generează pagina PDF cu datele clientului)
+  // 1 — EDITABIL (template fix după formatul aprobat — toate datele vin din formularul Date generale)
   { id:'d1', type:'editable', title:'Adresa de înaintare',
-    fields:['adresa_text'],
-    desc:'Scrisoare către OD prin care se înaintează dosarul. Generată automat din date generale + un text editabil.' },
+    fields:[],
+    template:'adresa_inaintare',
+    desc:'Generată automat după formatul aprobat. Antet beneficiar + adresare către OD + opisul documentelor. Nu necesită câmpuri suplimentare aici — toate datele vin din „Date generale" de sus.' },
 
   // 2 — BROWSE per client (PDF de la OD)
   { id:'d2', type:'browse', title:'Avizul tehnic de racordare (ATR)',
@@ -315,15 +316,17 @@ const DOCS_DEF = [
     accept:'.pdf,.jpg,.jpeg,.png',
     desc:'Atestatul ANRE al persoanei autorizate. Se atașează O SINGURĂ DATĂ și se reutilizează la toate dosarele.' },
 
-  // 4 — EDITABIL (memoriu cu date generale + text editabil)
+  // 4 — EDITABIL (Memoriu de prezentare — format I7-2011, secțiuni structurate)
   { id:'d4', type:'editable', title:'Memoriu de prezentare',
-    fields:['memoriu_descriere','memoriu_echipamente'],
-    desc:'Memoriu cu descrierea instalației și echipamentele principale. Pre-completat cu text standard editabil.' },
+    fields:['mem_scop','mem_obiectiv','mem_racordare','mem_tgd_circuite','mem_concluzii'],
+    template:'memoriu',
+    desc:'Memoriu structurat conform I7-2011 cu 8 secțiuni. Editezi doar părțile variabile (descriere obiectiv, lista circuite TGD); restul (date generale, protecții, încăperi, materiale, concluzii) se generează automat.' },
 
-  // 5 — EDITABIL (tabel încăperi)
+  // 5 — EDITABIL (Tabel încăperi — listă text linii)
   { id:'d5', type:'editable', title:'Tabel cu clasificarea încăperilor',
     fields:['tabel_incaperi'],
-    desc:'Lista încăperilor cu clasificarea lor BE (BE1 normal, BE2 umed, BE3 intemperii, etc.).' },
+    template:'tabel_incaperi',
+    desc:'Lista încăperilor — câte o linie pentru fiecare cu format: Denumire | Suprafață mp | Mediu | Umiditate | Clasificare BE | Observații' },
 
   // 6 — STANDARD PREÎNCĂRCAT
   { id:'d6', type:'permanent', title:'Buletin verificare priză de pământ (PRAM)',
