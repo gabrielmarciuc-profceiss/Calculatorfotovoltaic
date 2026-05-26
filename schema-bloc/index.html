@@ -106,6 +106,19 @@
   body.mode-trifazat .mono-only { display: none; }
   /* Independent toggle for number of PV strings (DC side, independent of AC branch type) */
   body.mode-1string .s2-only { display: none; }
+
+  /* ── Print styles ──────────────────────────────────────────────────────
+     Ascund toolbar/side-panel/tip-uri; afișez doar SVG-ul centrat, A3 landscape. */
+  @media print {
+    @page { size: A3 landscape; margin: 10mm; }
+    body { background: white !important; }
+    #toolbar, #side-panel, .tip, #inline-editor { display: none !important; }
+    #main { display: block; }
+    #svg-panel { padding: 0 !important; background: white !important; }
+    #svg-wrapper { box-shadow: none !important; width: auto !important; height: auto !important; }
+    #svg-wrapper svg { transform: none !important; width: 100% !important; height: auto !important; max-width: 100%; }
+    #svg-wrapper svg text { cursor: default !important; }
+  }
 </style>
 </head>
 <body class="mode-trifazat mode-2string">
@@ -133,6 +146,7 @@
   </div>
   <button class="green" onclick="downloadSVG()">⬇ Descarcă SVG</button>
   <button onclick="downloadPNG()">⬇ Export PNG</button>
+  <button onclick="window.print()" style="background:#854F0B;">🖨 Print</button>
   <a href="../" style="background:#444;color:#fff;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:bold;text-decoration:none;">← Înapoi la instrumente</a>
 </div>
 
