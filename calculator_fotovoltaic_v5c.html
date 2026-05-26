@@ -199,6 +199,12 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
       <div id="company_contact_cfg" style="font-size:11px;color:#888;"></div>
     </div>
   </div>
+
+  <!-- Status încărcare catalog — vizibil global ca user-ul să vadă imediat
+       dacă produsele s-au încărcat sau nu. Inputul de fișier (hidden) e folosit
+       intern de loadCatalogFromExcel; auto-load se face la pornire. -->
+  <input id="catalog_file_input" type="file" accept=".xlsx" onchange="if(this.files[0])loadCatalogFromExcel(this.files[0])" style="display:none;">
+  <div id="catalog_status" style="font-size:12px;padding:8px 12px;margin-bottom:14px;background:#f5f5f0;border-left:3px solid #888;border-radius:6px;line-height:1.5;">⏳ Se încarcă catalogul de produse…</div>
   <h1>Calculator Sistem Fotovoltaic</h1>
   <p class="subtitle">Ofertă completă · Randament producție · Simulare facturi · ROI · Analiză baterie · v5c</p>
 
@@ -220,6 +226,34 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
 
 <!-- STEP 1 -->
 <div class="panel active" id="panel1">
+  <div class="stitle">Sucursala care emite oferta</div>
+  <div style="font-size:12px;color:#888;margin-bottom:12px;">Selectează firma — logo-ul, adresa și datele de contact se aplică automat în oferta finală.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;">
+    <!-- Card Profceiss Electric -->
+    <div id="branch_card_electric" onclick="switchBranch('electric')" style="position:relative;cursor:pointer;border:2px solid #1D9E75;border-radius:12px;padding:16px;background:#E8F5F0;transition:all .15s;">
+      <div id="branch_check_electric" style="display:flex;position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div>
+      <img src="profceiss-logo.svg" alt="Profceiss" style="height:42px;width:auto;max-width:160px;object-fit:contain;margin-bottom:10px;" onerror="this.style.display='none'">
+      <div style="font-size:12px;font-weight:600;color:#185FA5;">Profceiss</div>
+      <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">București</div>
+      <div style="font-size:11px;color:#555;line-height:1.7;">
+        <div>📍 Șos. Unirii nr. 13, Balotești, jud. Ilfov</div>
+        <div>✉ office@profceiss.ro</div>
+        <div>📞 0747 755 489</div>
+      </div>
+    </div>
+    <!-- Card Profceiss Green Energy -->
+    <div id="branch_card_green" onclick="switchBranch('green')" style="position:relative;cursor:pointer;border:1px solid #d8d8d0;border-radius:12px;padding:16px;background:#fff;transition:all .15s;">
+      <div id="branch_check_green" style="display:none;position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div>
+      <img src="profceiss-green-logo.svg" alt="Profceiss Green Energy" style="height:42px;width:auto;max-width:160px;object-fit:contain;margin-bottom:10px;" onerror="this.style.display='none'">
+      <div style="font-size:12px;font-weight:600;color:#3B6D11;">Profceiss Green Energy</div>
+      <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Câmpulung</div>
+      <div style="font-size:11px;color:#555;line-height:1.7;">
+        <div>📍 Strada Negru Vodă nr. 115, jud. Argeș</div>
+        <div>✉ tehnic@profceiss.ro</div>
+        <div>📞 0748 738 206</div>
+      </div>
+    </div>
+  </div>
   <div class="stitle">Tip instalare</div>
   <div class="fg fg2">
     <div class="f"><label>Tip structură montaj (tip acoperiș)</label>
@@ -305,13 +339,10 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
 <div class="panel" id="panel2">
   <div class="stitle">Branșament & invertor</div>
 
-  <!-- ── IMPORT CATALOG EXCEL ─────────────────────────────────────────────
-       UI ascuns vizual — catalogul se încarcă automat de pe GitHub la deschiderea paginii.
-       Inputul și statusul rămân în DOM ca să nu se strice funcțiile JS care le referă. -->
-  <div style="display:none;">
-    <input type="file" accept=".xlsx" onchange="if(this.files[0])loadCatalogFromExcel(this.files[0])">
-    <div id="catalog_status"></div>
-  </div>
+  <!-- Catalogul se încarcă automat la pornire — vezi banda de status de sub
+       header-ul firmei (id="catalog_status"). Inputul de fișier real e plasat
+       lângă banda de status. -->
+
   <div style="background:#f0efe8;border-radius:10px;padding:14px;margin-bottom:1.25rem;">
     <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Tip branșament electric</div>
     <div style="display:flex;gap:10px;">
@@ -812,18 +843,55 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// DATELE FIRMEI — editați valorile de mai jos cu datele reale ale firmei.
-// logo: numele fișierului imagine (ex: logo.png), pus în ACELAȘI folder cu acest HTML.
+// DATELE FIRMELOR — două sucursale. Selectarea se face în pasul 1.
+// Identitatea aleasă (logo, adresă, contact) se aplică automat în oferta finală.
+// logo: numele fișierului imagine, pus în ACELAȘI folder cu acest HTML.
 // ─────────────────────────────────────────────────────────────────────────────
-const COMPANY = {
-  nume:   'Profceiss Electric SRL',
-  adresa: 'Șos. Unirii nr. 13, Balotești, jud. Ilfov',
-  tel:    '0747 755 489',
-  email:  'office@profceiss.ro / tehnic@profceiss.ro',
-  site:   'www.profceiss.ro',
-  logo:   'profceiss-logo.svg',
-  garantieManopera: 5
+const COMPANIES = {
+  electric: {
+    nume:   'Profceiss Electric SRL',
+    brand:  'Profceiss',
+    oras:   'București',
+    adresa: 'Șos. Unirii nr. 13, Balotești, jud. Ilfov',
+    tel:    '0747 755 489',
+    email:  'office@profceiss.ro',
+    site:   'www.profceiss.ro',
+    logo:   'profceiss-logo.svg',
+    garantieManopera: 5
+  },
+  green: {
+    nume:   'Profceiss Green Energy SRL',
+    brand:  'Profceiss Green Energy',
+    oras:   'Câmpulung',
+    adresa: 'Strada Negru Vodă nr. 115, Câmpulung, jud. Argeș',
+    tel:    '0748 738 206',
+    email:  'tehnic@profceiss.ro',
+    site:   'www.profceiss.ro',
+    logo:   'profceiss-green-logo.svg',
+    garantieManopera: 5
+  }
 };
+let activeBranch = 'electric';
+let COMPANY = COMPANIES[activeBranch];
+
+function switchBranch(branch){
+  if (!COMPANIES[branch]) return;
+  activeBranch = branch;
+  COMPANY = COMPANIES[branch];
+  // Actualizăm aspectul cardurilor de selecție
+  ['electric','green'].forEach(b => {
+    const card = v('branch_card_'+b);
+    const check = v('branch_check_'+b);
+    const selected = (b === branch);
+    if (card){
+      card.style.borderColor = selected ? '#1D9E75' : '#d8d8d0';
+      card.style.borderWidth = selected ? '2px' : '1px';
+      card.style.background = selected ? '#E8F5F0' : '#fff';
+    }
+    if (check) check.style.display = selected ? 'flex' : 'none';
+  });
+  applyCompany();
+}
 
 const TVA=0.21;
 const IRR_MAP={bucuresti:4.8,ilfov:4.8,constanta:5.1,dobrogea:5.2,moldova:4.5,ardeal:4.3,banat:4.6,oltenia:4.9,muntenia:4.8};
@@ -859,13 +927,15 @@ let catalogLoaded = false;
 // ─────────────────────────────────────────────────────────────────────────────
 function inferTipBat(model, kwh){
   // Dacă în Excel nu e completată coloana "tip", deducem din denumire & kWh.
+  // REGULĂ DE SIGURANȚĂ: orice produs cu kWh > 0 este ÎNTOTDEAUNA un modul de baterie.
+  // BMS-urile, cutiile, bazele și suporturile au kWh = 0 (nu stochează energie).
+  // Astfel niciun modul real nu poate fi clasificat greșit și ascuns din selecție.
+  if ((parseFloat(kwh)||0) > 0) return 'modul';
   const m = String(model||'').toLowerCase();
-  // Priorități: BMS/Control Box/BDU/cutie HV/Stack (Goodwe)/Starter kit → bms
+  // De aici kwh = 0 → e un accesoriu. Stabilim ce fel de accesoriu:
   if (/\bbms\b|control\s*box|control\s*unit|\bbdu\b|cutie\s*hv|back[\s-]*up\s*box|\bstack\b|starter\s*kit|base\s*pack|battery\s*management/.test(m)) return 'bms';
-  // baza/suport/rack/stand/base standalone → baza
-  if (/\bbaz[aă]\b|\bsuport\b|\brack\b|\bstand\b|\bbase\b|montaj\s*podea|montaj\s*perete/.test(m) && kwh<=0) return 'baza';
-  // implicit: modul (orice are kwh > 0 sau nu se potrivește pattern-urile)
-  return kwh > 0 ? 'modul' : 'accesoriu';
+  if (/\bbaz[aă]\b|\bsuport\b|\brack\b|\bstand\b|\bbase\b|montaj\s*podea|montaj\s*perete/.test(m)) return 'baza';
+  return 'accesoriu';
 }
 
 function getBatAccessories(batItem, nrBat){
@@ -1068,18 +1138,63 @@ function loadCatalogFromExcel(file) {
 
 // Auto-încărcare catalog de pe server (când HTML-ul e hostat online).
 // La deschiderea paginii încearcă să citească catalog_produse_pv.xlsx din același folder.
-// Dacă fișierul nu există sau nu poate fi accesat (ex: rulare locală cu file://), eșuează silențios
-// și utilizatorul poate folosi butonul manual.
-async function autoLoadCatalogFromServer() {
-  try {
-    const response = await fetch('catalog_produse_pv.xlsx?v=' + Date.now());
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const blob = await response.blob();
-    const file = new File([blob], 'catalog_produse_pv.xlsx', {type: blob.type});
-    loadCatalogFromExcel(file);
-  } catch(err) {
-    console.warn('Auto-încărcare catalog eșuată — folosește butonul manual:', err.message);
+// Tries multiple URL strategies. Dacă toate eșuează, afișează un mesaj VIZIBIL în
+// caseta de status (catalog_status) ca user-ul să știe ce s-a întâmplat — fără să fie
+// nevoie să deschidă DevTools.
+function setCatalogStatusHtml(html, color){
+  const el = v('catalog_status');
+  if (!el) return;
+  el.innerHTML = html;
+  if (color){
+    el.style.borderLeftColor = color;
   }
+}
+
+async function autoLoadCatalogFromServer() {
+  setCatalogStatusHtml('<span style="color:#888;">⏳ Se încarcă catalogul de produse…</span>', '#888');
+
+  // Lista de URL-uri de încercat (în ordine). Acoperim:
+  //  - relativ + cache-buster (cazul standard pe server)
+  //  - relativ explicit "./"
+  //  - fără cache-buster (în caz că serverul nu acceptă query-string pe statice)
+  //  - absolut pornind din rădăcina site-ului
+  const t = Date.now();
+  const urls = [
+    'catalog_produse_pv.xlsx?v=' + t,
+    './catalog_produse_pv.xlsx?v=' + t,
+    'catalog_produse_pv.xlsx',
+    '/catalog_produse_pv.xlsx?v=' + t
+  ];
+
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, {cache: 'no-store'});
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const blob = await response.blob();
+      if (!blob || blob.size === 0) throw new Error('fișier gol (0 bytes)');
+      const file = new File([blob], 'catalog_produse_pv.xlsx', {type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      console.log('[catalog] încărcat cu succes de la:', url, '(', blob.size, 'bytes )');
+      loadCatalogFromExcel(file);
+      return; // succes — funcția loadCatalogFromExcel va actualiza statusul prin showCatalogStatus
+    } catch (err) {
+      lastErr = err;
+      console.warn('[catalog] tentativă eșuată pentru', url, ':', err.message);
+    }
+  }
+
+  // Toate tentativele au eșuat — mesaj vizibil în UI
+  const isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:');
+  const hint = isFileProto
+    ? '<br><span style="color:#888;font-size:11px;">Pagina e deschisă local (<code>file://</code>). Browserele moderne blochează încărcarea automată a fișierelor locale. Deschide HTML-ul prin server (de ex. <code>http://localhost</code>) sau publică-l online.</span>'
+    : '<br><span style="color:#888;font-size:11px;">Verifică în DevTools (F12 → Network) cererea pentru <code>catalog_produse_pv.xlsx</code>. Fișierul trebuie să fie în același folder cu HTML-ul.</span>';
+
+  setCatalogStatusHtml(
+    `<span style="color:#A32D2D;font-weight:600;">⚠ Catalogul nu s-a putut încărca automat</span>
+     <span style="color:#A32D2D;"> — ${lastErr ? lastErr.message : 'eroare necunoscută'}</span>${hint}`,
+    '#A32D2D'
+  );
+  console.error('[catalog] auto-încărcare eșuată definitiv:', lastErr);
 }
 
 function showCatalogStatus(filename) {
@@ -3618,12 +3733,23 @@ function applyCompany(){
   if(ct) ct.textContent=[COMPANY.tel,COMPANY.email,COMPANY.site].filter(Boolean).join('  ·  ');
 }
 
-applyCompany();
-renderStr();
-fetchEurRate();
+// ── INIȚIALIZARE LA PORNIRE ────────────────────────────────────────────────
+// Auto-load catalog PRIMUL — async fetch pornește imediat și nu depinde de
+// nimic altceva. Astfel, chiar dacă vreo funcție sincronă de mai jos aruncă o
+// eroare, încărcarea produselor nu mai e blocată.
 autoLoadCatalogFromServer();
+
+// Fiecare init wrapuit în try/catch ca o eroare să nu mai cascadeze și să
+// oprească restul inițializărilor (inclusiv catalogul).
+try { applyCompany(); } catch(e){ console.error('[init] applyCompany:', e); }
+try { renderStr();    } catch(e){ console.error('[init] renderStr:', e); }
+try { fetchEurRate(); } catch(e){ console.error('[init] fetchEurRate:', e); }
+
 // Inițializare branșament la pornire (monofazat implicit)
-setTimeout(()=>{ renderInv2Brands(); populateInv2(); }, 100);
+setTimeout(()=>{
+  try { renderInv2Brands(); populateInv2(); }
+  catch(e){ console.error('[init] renderInv2Brands/populateInv2:', e); }
+}, 100);
 </script>
 </body>
 </html>
