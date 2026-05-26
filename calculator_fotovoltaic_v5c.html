@@ -226,6 +226,22 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
 
 <!-- STEP 1 -->
 <div class="panel active" id="panel1">
+
+  <!-- ── OFERTE SALVATE (localStorage) ───────────────────────────────────
+       Lista persistă în browserul curent. Pentru backup/portabilitate folosește
+       butoanele Import/Export JSON. -->
+  <details id="saved_offers_details" style="margin-bottom:1.25rem;background:#f0efe8;border-radius:10px;padding:10px 14px;">
+    <summary style="font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span>📂 Oferte salvate <span id="saved_offers_count" style="font-weight:normal;color:#888;font-size:11px;"></span></span>
+      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" onclick="event.stopPropagation();">
+        <input type="file" id="import_offer_input" accept=".json" style="display:none;" onchange="if(this.files[0]){importOfferFromJson(this.files[0]); this.value='';}">
+        <button class="btn" type="button" onclick="document.getElementById('import_offer_input').click()" style="padding:4px 10px;font-size:11px;">⬆ Importă JSON</button>
+        <button class="btn" type="button" onclick="exportOfferAsJson(null)" style="padding:4px 10px;font-size:11px;" title="Descarcă toate ofertele într-un singur JSON pentru backup">💾 Backup toate</button>
+      </span>
+    </summary>
+    <div id="saved_offers_list" style="margin-top:10px;"></div>
+  </details>
+
   <div class="stitle">Sucursala care emite oferta</div>
   <div style="font-size:12px;color:#888;margin-bottom:12px;">Selectează firma — logo-ul, adresa și datele de contact se aplică automat în oferta finală.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;">
@@ -769,6 +785,8 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;}
   </div>
   <div class="btn-row">
     <button class="btn" onclick="goStep(4)">← Înapoi</button>
+    <button class="btn" type="button" onclick="saveCurrentOffer()" style="background:#185FA5;color:#fff;border-color:#185FA5;" title="Salvează oferta în browser (localStorage). O regăsești pe pasul 1.">💾 Salvează oferta</button>
+    <button class="btn" type="button" onclick="exportOfferAsJson(saveCurrentOffer(true))" style="background:#fff;color:#185FA5;border-color:#185FA5;" title="Salvează în browser ȘI descarcă fișier JSON portabil.">⬇ Salvează + JSON</button>
     <button class="btn pri" onclick="goStep(6)">Continuă →</button>
   </div>
 </div>
@@ -3733,6 +3751,308 @@ function applyCompany(){
   if(ct) ct.textContent=[COMPANY.tel,COMPANY.email,COMPANY.site].filter(Boolean).join('  ·  ');
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// OFERTE SALVATE — persistență localStorage + Export/Import JSON
+// ═══════════════════════════════════════════════════════════════════════════
+const OFFERS_STORAGE_KEY = 'profceiss_saved_offers_v1';
+
+function getSavedOffers(){
+  try {
+    const raw = localStorage.getItem(OFFERS_STORAGE_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){
+    console.error('[oferte] read error:', e);
+    return [];
+  }
+}
+
+function setSavedOffers(arr){
+  try {
+    localStorage.setItem(OFFERS_STORAGE_KEY, JSON.stringify(arr));
+  } catch(e){
+    console.error('[oferte] write error:', e);
+    alert('Nu s-a putut salva în memoria browserului: ' + e.message);
+  }
+}
+
+// Captează TOATĂ starea ofertei într-un obiect serializabil JSON-compatibil.
+// Iterează peste toate input/select/textarea din toate panourile (1-7) cu id.
+function captureOfferState(){
+  const fields = {};
+  const selectors = '#panel1, #panel2, #panel3, #panel4, #panel5, #panel6';
+  document.querySelectorAll(selectors + ' input, ' + selectors + ' select, ' + selectors + ' textarea').forEach(el => {
+    if (!el.id) return;
+    if (el.type === 'file') return; // skip file inputs
+    if (el.type === 'checkbox' || el.type === 'radio') fields[el.id] = el.checked;
+    else fields[el.id] = el.value;
+  });
+  return {
+    fields,
+    globals: {
+      activeBranch:        (typeof activeBranch !== 'undefined') ? activeBranch : 'electric',
+      bransament:          (typeof bransament !== 'undefined') ? bransament : 'mono',
+      hasInv2:             (typeof hasInv2 !== 'undefined') ? hasInv2 : false,
+      prodCalcEnabled:     (typeof prodCalcEnabled !== 'undefined') ? prodCalcEnabled : false,
+      panouriDetailEnabled:(typeof panouriDetailEnabled !== 'undefined') ? panouriDetailEnabled : false,
+      ofertaPerProdus:     (typeof ofertaPerProdus !== 'undefined') ? ofertaPerProdus : true,
+      adaosGlobalActive:   (typeof adaosGlobalActive !== 'undefined') ? adaosGlobalActive : false,
+      discountActive:      (typeof discountActive !== 'undefined') ? discountActive : false,
+      structAutoActive:    (typeof structAutoActive !== 'undefined') ? structAutoActive : true,
+      backupActive:        (typeof backupActive !== 'undefined') ? backupActive : false,
+      // Indecșii din catalogul curent pentru re-selectare după restore
+      selectedInvIdx:      (typeof selectedInv !== 'undefined' && selectedInv) ? CAT_INV.indexOf(selectedInv) : -1,
+      selectedInv2Idx:     (typeof selectedInv2 !== 'undefined' && selectedInv2) ? CAT_INV.indexOf(selectedInv2) : -1,
+      // Snapshot scurt al modelelor selectate (ca să le putem regăsi după nume dacă indexul s-a schimbat)
+      selectedInvModel:    (typeof selectedInv !== 'undefined' && selectedInv) ? selectedInv.model : null,
+      selectedInv2Model:   (typeof selectedInv2 !== 'undefined' && selectedInv2) ? selectedInv2.model : null
+    },
+    clientPhotos: (typeof clientPhotos !== 'undefined' && Array.isArray(clientPhotos)) ? clientPhotos : []
+  };
+}
+
+// Generează un titlu descriptiv din starea capturată — apare în lista de oferte.
+// Ex: "Oferta Solis trifazat, invertor 6kW LV, cu baterie, panouri de 7,12 kWp — Popescu Ion"
+function generateOfferTitle(state){
+  const f = state.fields || {};
+  const g = state.globals || {};
+
+  let title = 'Oferta';
+
+  // Brand + fazare + invertor (preferăm date din catalog dacă există)
+  if (g.selectedInvIdx >= 0 && CAT_INV[g.selectedInvIdx]){
+    const inv = CAT_INV[g.selectedInvIdx];
+    title += ' ' + inv.brand;
+    title += ' ' + (g.bransament === 'tri' ? 'trifazat' : 'monofazat');
+    title += ', invertor ' + (inv.kw || '?') + 'kW ' + (String(inv.tensiune||'').toUpperCase() || '');
+  } else if (g.selectedInvModel){
+    title += ' ' + (g.bransament === 'tri' ? 'trifazat' : 'monofazat');
+    title += ', invertor „' + g.selectedInvModel + '"';
+  } else {
+    title += ' ' + (g.bransament === 'tri' ? 'trifazat' : 'monofazat');
+  }
+
+  // Baterie?
+  const hasBat = f.bat_sel && f.bat_sel !== '' && f.bat_sel !== '0';
+  title += hasBat ? ', cu baterie' : ', fără baterie';
+
+  // Total kWp panouri (suma pe toate string-urile)
+  const nrStr = parseInt(f.nr_str) || 1;
+  let totalWp = 0;
+  for (let i = 1; i <= nrStr; i++){
+    const nr = parseInt(f['s'+i+'_nr']) || 0;
+    const wp = parseInt(f['s'+i+'_wp']) || 0;
+    totalWp += nr * wp;
+  }
+  if (totalWp > 0){
+    title += ', panouri de ' + (totalWp/1000).toFixed(2).replace('.', ',') + ' kWp';
+  }
+
+  // Client (dacă există)
+  if (f.client_nume && f.client_nume.trim()){
+    title += ' — ' + f.client_nume.trim();
+  }
+
+  return title.trim();
+}
+
+// Salvează oferta curentă în localStorage.
+// Cu silent=true, nu afișează alert (folosit de "Salvează + JSON") și returnează id-ul ofertei.
+function saveCurrentOffer(silent){
+  const state = captureOfferState();
+  const title = generateOfferTitle(state);
+  const id = 'of_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+  const offer = {
+    id,
+    title,
+    createdAt: new Date().toISOString(),
+    state
+  };
+  const offers = getSavedOffers();
+  offers.unshift(offer); // cele mai noi sus
+  setSavedOffers(offers);
+  renderSavedOffersList();
+  if (!silent){
+    alert('✅ Oferta a fost salvată în browser:\n\n' + title + '\n\nO găsești pe pasul 1, la „Oferte salvate".');
+  }
+  return id;
+}
+
+// Încarcă o ofertă salvată — pune toate valorile înapoi în formular.
+function loadSavedOffer(id){
+  const offers = getSavedOffers();
+  const offer = offers.find(o => o.id === id);
+  if (!offer){ alert('Oferta nu a fost găsită.'); return; }
+
+  if (!confirm('Reîncarci această ofertă?\n\n' + offer.title + '\n\n⚠ Setările curente vor fi suprascrise.')) return;
+
+  restoreOfferState(offer.state);
+  // Du-te la pasul 1 ca user-ul să poată merge înainte prin pași
+  try { if (typeof goStep === 'function') goStep(1); } catch(e){}
+}
+
+function restoreOfferState(state){
+  if (!state) return;
+  const f = state.fields || {};
+  const g = state.globals || {};
+
+  // 1. Restore firma (branch)
+  if (g.activeBranch && typeof switchBranch === 'function'){
+    try { switchBranch(g.activeBranch); } catch(e){ console.warn('[restore] switchBranch:', e); }
+  }
+
+  // 2. Restore bransament (asta re-populează automat dropdown-ul de invertor)
+  if (g.bransament && typeof setBransament === 'function'){
+    try { setBransament(g.bransament); } catch(e){ console.warn('[restore] setBransament:', e); }
+  }
+
+  // 3. Set toate input/select values (după bransament ca să existe opțiunile)
+  Object.keys(f).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    try {
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!f[id];
+      else el.value = f[id];
+    } catch(e){ /* silent */ }
+  });
+
+  // 4. Re-render strings (pasul 3) — recreează cardurile cu valorile noi
+  try { if (typeof renderStr === 'function') renderStr(); } catch(e){ console.warn('[restore] renderStr:', e); }
+
+  // 5. Re-select invertor și fire change handlers
+  try {
+    if (g.selectedInvIdx >= 0 && v('inv2_sel')){
+      v('inv2_sel').value = String(g.selectedInvIdx);
+      if (typeof onInv2Sel === 'function') onInv2Sel();
+    }
+  } catch(e){ console.warn('[restore] inv2_sel:', e); }
+  try {
+    if (g.selectedInv2Idx >= 0 && v('inv2_sel_b')){
+      v('inv2_sel_b').value = String(g.selectedInv2Idx);
+      if (typeof onInv2SelB === 'function') onInv2SelB();
+    }
+  } catch(e){ console.warn('[restore] inv2_sel_b:', e); }
+
+  // 6. Recalculează total
+  try { if (typeof updTotal === 'function') updTotal(); } catch(e){ console.warn('[restore] updTotal:', e); }
+
+  // 7. Re-aplică header companie
+  try { if (typeof applyCompany === 'function') applyCompany(); } catch(e){ console.warn('[restore] applyCompany:', e); }
+
+  console.log('[restore] ofertă restaurată cu succes');
+}
+
+function deleteSavedOffer(id){
+  const offers = getSavedOffers();
+  const offer = offers.find(o => o.id === id);
+  if (!offer) return;
+  if (!confirm('Ștergi această ofertă?\n\n' + offer.title)) return;
+  setSavedOffers(offers.filter(o => o.id !== id));
+  renderSavedOffersList();
+}
+
+// Export ca JSON. id=null → backup TOATE ofertele. id=string → o singură ofertă.
+function exportOfferAsJson(id){
+  const offers = getSavedOffers();
+  let payload, niceName;
+  if (id){
+    const offer = offers.find(o => o.id === id);
+    if (!offer){ alert('Oferta nu a fost găsită.'); return; }
+    payload = offer;
+    niceName = (offer.title || 'oferta')
+      .replace(/[^\w\s.,-]/g,'')
+      .trim()
+      .replace(/\s+/g,'_')
+      .slice(0,80);
+  } else {
+    if (offers.length === 0){ alert('Nu există oferte de exportat.'); return; }
+    payload = { exportedAt: new Date().toISOString(), offers };
+    niceName = 'profceiss_backup_oferte';
+  }
+  const data = JSON.stringify(payload, null, 2);
+  const blob = new Blob([data], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = niceName + '_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+// Importă JSON — acceptă fie o singură ofertă, fie un backup cu multiple oferte.
+function importOfferFromJson(file){
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      const offers = getSavedOffers();
+      let imported = 0;
+      const newId = () => 'of_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+
+      if (data && data.state && data.title){
+        // Format: o singură ofertă
+        offers.unshift({...data, id: newId()});
+        imported = 1;
+      } else if (data && Array.isArray(data.offers)){
+        // Format: backup cu multiple oferte
+        data.offers.forEach(o => {
+          if (o && o.state){
+            offers.unshift({...o, id: newId()});
+            imported++;
+          }
+        });
+      } else {
+        alert('Format JSON nerecunoscut. Așteptam o ofertă singulară sau un backup cu .offers[]');
+        return;
+      }
+
+      setSavedOffers(offers);
+      renderSavedOffersList();
+      alert('✅ Importate ' + imported + ' ofertă/oferte.');
+    } catch(err){
+      alert('Eroare la citirea JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function fmtOfferDate(iso){
+  try {
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2,'0');
+    return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+  } catch(e){ return iso; }
+}
+
+function renderSavedOffersList(){
+  const w = v('saved_offers_list');
+  const cnt = v('saved_offers_count');
+  if (!w) return;
+  const offers = getSavedOffers();
+  if (cnt) cnt.textContent = offers.length ? '(' + offers.length + ')' : '';
+  if (offers.length === 0){
+    w.innerHTML = '<div style="font-size:12px;color:#888;padding:12px;background:#fff;border:0.5px dashed #ccc;border-radius:8px;text-align:center;">Nu există oferte salvate.<br>Apasă <strong>„💾 Salvează oferta"</strong> pe pasul 5 ca să salvezi prima ofertă.</div>';
+    return;
+  }
+  w.innerHTML = offers.map(o => `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:0.5px solid #e0e0e0;border-radius:8px;margin-bottom:6px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:1.4;">${(o.title||'(fără titlu)').replace(/</g,'&lt;')}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">📅 ${fmtOfferDate(o.createdAt)}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;">
+        <button class="btn" type="button" onclick="loadSavedOffer('${o.id}')" style="padding:5px 10px;font-size:11px;background:#1D9E75;color:#fff;border-color:#1D9E75;" title="Reîncarcă oferta în formular">↻ Încarcă</button>
+        <button class="btn" type="button" onclick="exportOfferAsJson('${o.id}')" style="padding:5px 10px;font-size:11px;" title="Descarcă această ofertă ca fișier JSON">⬇ JSON</button>
+        <button class="btn" type="button" onclick="deleteSavedOffer('${o.id}')" style="padding:5px 10px;font-size:11px;color:#A32D2D;border-color:#A32D2D;" title="Șterge oferta">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
 // ── INIȚIALIZARE LA PORNIRE ────────────────────────────────────────────────
 // Auto-load catalog PRIMUL — async fetch pornește imediat și nu depinde de
 // nimic altceva. Astfel, chiar dacă vreo funcție sincronă de mai jos aruncă o
@@ -3744,6 +4064,7 @@ autoLoadCatalogFromServer();
 try { applyCompany(); } catch(e){ console.error('[init] applyCompany:', e); }
 try { renderStr();    } catch(e){ console.error('[init] renderStr:', e); }
 try { fetchEurRate(); } catch(e){ console.error('[init] fetchEurRate:', e); }
+try { renderSavedOffersList(); } catch(e){ console.error('[init] renderSavedOffersList:', e); }
 
 // Inițializare branșament la pornire (monofazat implicit)
 setTimeout(()=>{
