@@ -499,22 +499,29 @@ function renderDocs() {
 }
 
 function renderEditableFields(d) {
+  // Defaults pre-completate cu textul din drafturi aprobate ale user-ului
   const defaults = {
-    'adresa_text': 'Va inaintam prezentul dosar de utilizare pentru sporul de putere realizat la locul de consum mentionat mai sus, in conformitate cu Avizul Tehnic de Racordare emis de dumneavoastra. Anexat regasiti documentele cerute conform opisului atasat.',
-    'memoriu_descriere': 'Instalatia electrica interioara a fost executata in conformitate cu normativul I7/2011, cu respectarea schemei monofilare anexate. Tabloul general de distributie a fost dimensionat pentru puterea solicitata.',
-    'memoriu_echipamente': 'Tablouri electrice: TGD echipat cu intrerupator general, intrerupatoare diferentiale 30 mA si sigurante automate dedicate fiecarui circuit, descarcatoare de supratensiune (SPD) Tip 2.\nConductoare: cupru, sectiuni dimensionate conform I7/2011 (1,5 mm² pentru iluminat, 2,5 mm² pentru prize, 4-6 mm² pentru coloane).\nPriza de pamant: artificiala, rezistenta de dispersie ≤ 4 Ω, masurata cu aparat etalon.',
-    'tabel_incaperi': 'Living — BE1 (normal)\nDormitor 1 — BE1 (normal)\nDormitor 2 — BE1 (normal)\nBaie — BE2 (umed)\nBucatarie — BE1 (normal)\nHol — BE1 (normal)\nTerasa exterioara — BE3 (intemperii)'
+    // ── Memoriu de prezentare ──
+    'mem_scop': 'Prezenta documentatie tehnica a fost intocmita in vederea obtinerii acordului de punere sub tensiune a instalatiei electrice interioare aferente apartamentului/casei [DESCRIERE LOC CONSUM], pentru un spor de putere de la [PUTERE_EXISTENTA] kW la [PUTERE_SOLICITATA] kW, conform ATR nr. [ATR_NR] din [ATR_DATA].',
+    'mem_obiectiv': 'Obiectivul este [tip cladire — apartament duplex / casa P+M / etc.] cu suprafata utila de [X] mp si suprafata totala de [Y] mp, avand urmatoarea compartimentare:\nParter: vestibul, hol, bucatarie, camera de zi, grup sanitar.\nEtaj: hol, bai, dormitoare, balcoane.',
+    'mem_racordare': 'Racordarea se realizeaza la nivelul de tensiune 0,4 kV, la PTAB [NR PTAB], prin bransament [monofazat/trifazat] existent. Conform ATR, se inlocuieste disjunctorul [Ima existent] cu disjunctor [Ima nou], iar contorul cu seria [serie contor] se reprogrameaza conform puterii solicitate. Punctul de masurare este la BMPT exterior.',
+    'mem_tgd_circuite': 'Coloana principala: cablu trifazat 5x6 mmp CYY-F, de la BMPT/BMPM la tabloul general. Intrerupator automat general trifazat 40A-4P.\n\nCircuite TGD (denumire | siguranta | cablu | diferential):\nCL1 | Iluminat parter (L1) | C10-1P+N | 3x1,5 mmp CYY-F | 2A/30mA\nCL2 | Iluminat etaj (L2) | C10-1P+N | 3x1,5 mmp CYY-F | 2A/30mA\nP1  | Prize generale (L1) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP2  | Prize generale (L2) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP3  | Masina de spalat (L3) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP4  | Masina gatit/hota (L1) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP5  | Centrala termica (L2) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP6  | Boiler (L3) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP7  | Cuptor electric (L1) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP8  | Aer conditionat (L2) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP9  | Pompa caldura (L3) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP10 | Aer conditionat (L1) | C20-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nP11 | Prize baie/AC (L2) | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA\nCS1 | Curenti slabi (date/TV) | C6-1P+N | 3x1,5 mmp CYY-F | -\nR1  | Rezerva | C16-2P+N | 3x2,5 mmp CYY-F | 2A/30mA',
+    'mem_concluzii': 'Instalatia electrica interioara a fost executata cu respectarea prevederilor Normativului I7-2011, a normelor de protectia muncii si PSI in vigoare. Instalatia corespunde din punct de vedere tehnic si indeplineste conditiile pentru punerea sub tensiune.',
+
+    // ── Tabel încăperi ── (câte o linie: Denumire | Suprafata | Mediu | Umiditate | Clasificare | Observatii)
+    'tabel_incaperi': 'Vestibul | 5,3 mp | Normal | Normal | BE1a | -\nGrup sanitar (P) | 1,0 mp | Umed | Umed | BE2 | Zona 2 baie\nHol (P) | 2,6 mp | Normal | Normal | BE1a | -\nBucatarie | 11,5 mp | Normal | Normal | BE1a | -\nCamera de zi | 32,0 mp | Normal | Normal | BE1a | -\nHol (Et.) | 5,1 mp | Normal | Normal | BE1a | -\nBaie (Et.) | 4,6 mp | Umed | Umed | BE2 | Zona 2 baie\nDormitor 1 | 12,8 mp | Normal | Normal | BE1a | -\nBaie 2 (Et.) | 3,6 mp | Umed | Umed | BE2 | Zona 2 baie\nDormitor 2 | 14,8 mp | Normal | Normal | BE1a | -\nDormitor 3 | 11,4 mp | Normal | Normal | BE1a | -\nCasa scarii 1 | 3,2 mp | Normal | Normal | BE1a | -\nCasa scarii 2 | 3,6 mp | Normal | Normal | BE1a | -\nBalcon 1 | 3,1 mp | Normal | Normal | BE1a | Spatiu exterior acoperit\nBalcon 2 | 0,5 mp | Normal | Normal | BE1a | Spatiu exterior acoperit'
   };
   let html = '';
   (d.fields || []).forEach(f => {
     const fid = `${d.id}_${f}`;
     const label = labelForField(f);
-    const val = state.fields[d.id][f] || defaults[f] || '';
+    const val = state.fields[d.id][f] !== undefined ? state.fields[d.id][f] : (defaults[f] || '');
+    const rows = (f === 'mem_tgd_circuite' || f === 'tabel_incaperi') ? 12 : 5;
     html += `
       <div class="f" style="margin-bottom:10px;">
         <label>${label}</label>
-        <textarea id="${fid}" rows="5" oninput="onFieldChange('${d.id}','${f}',this.value)">${val}</textarea>
-        <span class="hint">Acest text apare în PDF-ul generat pentru acest document.</span>
+        <textarea id="${fid}" rows="${rows}" oninput="onFieldChange('${d.id}','${f}',this.value)">${val}</textarea>
+        <span class="hint">${labelHintForField(f)}</span>
       </div>
     `;
   });
@@ -523,12 +530,20 @@ function renderEditableFields(d) {
 
 function labelForField(f) {
   const m = {
-    'adresa_text':'Text adresă de înaintare',
-    'memoriu_descriere':'Descriere instalație',
-    'memoriu_echipamente':'Echipamente principale',
-    'tabel_incaperi':'Tabel încăperi (câte o linie: „Nume — Clasificare BE")'
+    'mem_scop':'2. Scopul lucrării',
+    'mem_obiectiv':'3. Descrierea obiectivului',
+    'mem_racordare':'4. Instalația de racordare',
+    'mem_tgd_circuite':'5. Instalația de utilizare — coloană + TGD + circuite',
+    'mem_concluzii':'8. Concluzii',
+    'tabel_incaperi':'Lista încăperilor (Denumire | Suprafață | Mediu | Umiditate | Clasificare BE | Observații)'
   };
   return m[f] || f;
+}
+
+function labelHintForField(f) {
+  if (f === 'mem_tgd_circuite') return 'Format: Cod | Destinatie (faza) | Siguranta | Cablu | Diferential — câte o linie per circuit. Editează liber.';
+  if (f === 'tabel_incaperi') return 'Câte o linie per încăpere, cu „ | " ca separator. Coloanele: Denumire | Suprafata | Mediu | Umiditate | Clasificare BE | Observatii.';
+  return 'Editabil per dosar — apare în PDF-ul generat al acestui document.';
 }
 
 function renderPermanentUpload(d) {
@@ -980,7 +995,332 @@ async function drawOpisPage(pdf, font, fontBold) {
   page.drawText(asciiSafe(`Data: ${v('data_dosar').value || new Date().toISOString().slice(0,10)}`), { x: m, y: m - 10, size: 9, font, color: rgb(0.5,0.5,0.5) });
 }
 
+// Helper: format date dd.mm.yyyy
+function fmtRomDate(iso) {
+  if (!iso) return '-';
+  try {
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2,'0');
+    return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear();
+  } catch(e) { return iso; }
+}
+
+// Helper: kW → kVA aproximativ (factor 1.087 = 1/cos(phi) cu cos(phi)=0.92)
+function kvaFromKw(kw) {
+  const n = parseFloat(kw); if (isNaN(n)) return '-';
+  return (n / 0.92).toFixed(3).replace('.', ',');
+}
+
+// Helper: început pagină cu footer doc + opțional număr pagină
+function addPageWithFooter(pdf, num) {
+  const page = pdf.addPage(PageSizes.A4);
+  return page;
+}
+function drawFooter(page, font, num, totalDocs) {
+  const { width } = page.getSize();
+  page.drawText(asciiSafe(`Document ${num}/${totalDocs}`), { x: width - 110, y: 25, size: 8, font, color: rgb(0.5,0.5,0.5) });
+}
+
+// Router principal — apelează generatorul potrivit per template
 async function drawEditableDoc(pdf, font, fontBold, d, num) {
+  if (d.template === 'adresa_inaintare') return drawAdresaInaintare(pdf, font, fontBold, d, num);
+  if (d.template === 'memoriu')          return drawMemoriu(pdf, font, fontBold, d, num);
+  if (d.template === 'tabel_incaperi')   return drawTabelIncaperi(pdf, font, fontBold, d, num);
+  return drawGenericEditableDoc(pdf, font, fontBold, d, num);
+}
+
+// ── 1. ADRESA DE ÎNAINTARE — format exact aprobat ─────────────────────────
+async function drawAdresaInaintare(pdf, font, fontBold, d, num) {
+  const page = addPageWithFooter(pdf, num);
+  const { width, height } = page.getSize();
+  const m = 60;
+  let y = height - m;
+  const maxW = width - 2*m;
+
+  // Antet beneficiar (stânga sus)
+  const benLines = [
+    (v('ben_nume').value || '').toUpperCase(),
+    `CNP: ${v('ben_cnp').value || '-'}`,
+    `CI Seria ${v('ben_ci_seria').value || '-'} nr. ${v('ben_ci_nr').value || '-'}`,
+    v('ben_adr_domiciliu').value || v('ben_adr').value || '-',
+    `Tel: ${v('ben_tel').value || '-'}`
+  ];
+  benLines.forEach((l, idx) => {
+    page.drawText(asciiSafe(l), { x: m, y, size: 10, font: idx === 0 ? fontBold : font });
+    y -= 14;
+  });
+  y -= 14;
+
+  // Adresare către OD
+  page.drawText('Catre,', { x: m, y, size: 10, font }); y -= 14;
+  page.drawText(asciiSafe(v('atr_od').value || '-'), { x: m, y, size: 10, font: fontBold }); y -= 14;
+  if (v('od_directie').value) { page.drawText(asciiSafe(v('od_directie').value), { x: m, y, size: 10, font }); y -= 14; }
+  if (v('od_adresa').value) { page.drawText(asciiSafe(v('od_adresa').value), { x: m, y, size: 10, font }); y -= 14; }
+  y -= 18;
+
+  // Titluri
+  page.drawText('ADRESA DE INAINTARE', { x: width/2 - 90, y, size: 13, font: fontBold }); y -= 16;
+  page.drawText('DOSAR INSTALATIE DE UTILIZARE - SPOR DE PUTERE', { x: width/2 - 150, y, size: 11, font: fontBold }); y -= 24;
+
+  // Corpul cererii (paragrafele oficiale)
+  const para1 = `Subsemnatul ${(v('ben_nume').value||'-').toUpperCase()}, CNP ${v('ben_cnp').value||'-'}, domiciliat in ${v('ben_adr_domiciliu').value || v('ben_adr').value || '-'},`;
+  y = drawWrapped(page, para1, { x: m, y, maxWidth: maxW, font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
+  y -= 4;
+
+  const para2 = `titular al Avizului Tehnic de Racordare nr. ${v('atr_nr').value || '-'} din ${fmtRomDate(v('atr_data').value)}, emis de ${v('atr_od').value || '-'}, pentru locul de consum amplasat in ${v('ben_adr').value || '-'} (POD: ${v('pod').value || '-'}),`;
+  y = drawWrapped(page, para2, { x: m, y, maxWidth: maxW, font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
+  y -= 4;
+
+  const para3 = `va inaintez, alaturat, Dosarul Instalatiei de Utilizare in vederea verificarii si punerii sub tensiune a instalatiei electrice interioare, conform prevederilor Regulamentului privind racordarea utilizatorilor la retelele electrice de interes public, aprobat prin Ordinul ANRE nr. 59/2013.`;
+  y = drawWrapped(page, para3, { x: m, y, maxWidth: maxW, font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
+  y -= 14;
+
+  // Opisul documentelor (compilat dinamic din DOCS_DEF + date)
+  page.drawText('Dosarul contine urmatoarele documente:', { x: m, y, size: 10, font: fontBold }); y -= 16;
+
+  const opisLines = buildOpisLines();
+  opisLines.forEach(l => {
+    if (y < 130) return; // protecție simplă pagină
+    page.drawText(asciiSafe(l), { x: m + 6, y, size: 9.5, font }); y -= 13;
+  });
+  y -= 10;
+
+  const paraFinal = 'Va rog sa binevoiti a verifica documentatia si a dispune punerea sub tensiune a instalatiei de utilizare.';
+  y = drawWrapped(page, paraFinal, { x: m, y, maxWidth: maxW, font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
+  y -= 20;
+
+  // Semnături jos (data + semnătura + nume)
+  if (y < 110) y = 110;
+  page.drawText(`Data: ${fmtRomDate(v('data_dosar').value)}`, { x: m, y, size: 10, font }); y -= 14;
+  page.drawText('Semnatura: _____________________________', { x: m, y, size: 10, font }); y -= 18;
+  page.drawText(asciiSafe((v('ben_nume').value || '').toUpperCase()), { x: m, y, size: 10, font: fontBold });
+
+  drawFooter(page, font, num, DOCS_DEF.length);
+}
+
+// Construiește lista numerotată pentru opisul din corpul Adresei de înaintare
+function buildOpisLines() {
+  return DOCS_DEF.map((d, i) => {
+    const n = i + 1;
+    let extra = '';
+    if (d.id === 'd2')  extra = ` nr. ${v('atr_nr').value || '-'} din ${fmtRomDate(v('atr_data').value)}`;
+    if (d.id === 'd3')  extra = ` - ${v('exec_nume').value || '-'}, ANRE ${v('exec_anre').value || '-'}`;
+    if (d.id === 'd6')  extra = ` nr. ${v('pram_priza_nr').value || '-'} din ${fmtRomDate(v('pram_priza_data').value)}`;
+    if (d.id === 'd11') extra = ` nr. ${v('decl_exec_nr').value || '-'} din ${fmtRomDate(v('decl_exec_data').value)}`;
+    if (d.id === 'd12') {
+      const comp = COMPANIES[v('branch').value].nume;
+      extra = ` - ${comp}, atestate ANRE ${v('firma_atestate').value || '-'}`;
+    }
+    // Pentru documentul curent (1) marcăm „prezentul document"
+    if (d.id === 'd1') extra = ' (prezentul document)';
+    return `${n}. ${d.title}${extra}`;
+  });
+}
+
+// ── 4. MEMORIU DE PREZENTARE — format I7-2011, 8 secțiuni ────────────────
+async function drawMemoriu(pdf, font, fontBold, d, num) {
+  let page = addPageWithFooter(pdf, num);
+  const { width, height } = page.getSize();
+  const m = 50;
+  const maxW = width - 2*m;
+  let y = height - m;
+
+  // Titlu
+  page.drawText('MEMORIU DE PREZENTARE', { x: width/2 - 95, y, size: 14, font: fontBold }); y -= 14;
+  page.drawText('Instalatie de utilizare - Spor de putere', { x: width/2 - 95, y, size: 10, font, color: rgb(0.4,0.4,0.4) }); y -= 12;
+  page.drawText('conform Normativului I7-2011', { x: width/2 - 80, y, size: 10, font, color: rgb(0.4,0.4,0.4) }); y -= 22;
+
+  const company = COMPANIES[v('branch').value];
+
+  // Helper pentru a verifica pagina și a face break dacă e nevoie
+  const ensureSpace = (need) => {
+    if (y < 80 + need) {
+      drawFooter(page, font, num, DOCS_DEF.length);
+      page = pdf.addPage(PageSizes.A4);
+      y = height - m;
+    }
+  };
+
+  const section = (n, title) => {
+    ensureSpace(40);
+    page.drawText(asciiSafe(`${n}. ${title.toUpperCase()}`), { x: m, y, size: 11, font: fontBold });
+    y -= 8;
+    page.drawLine({ start:{x:m,y}, end:{x:width-m,y}, color: rgb(0.7,0.7,0.7), thickness: 0.5 });
+    y -= 12;
+  };
+  const para = (text, opts) => {
+    ensureSpace(20);
+    y = drawWrapped(page, text, { x: m, y, maxWidth: maxW, font: opts?.bold ? fontBold : font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
+    y -= (opts?.gap !== undefined ? opts.gap : 6);
+  };
+  const kv = (label, value) => {
+    ensureSpace(14);
+    page.drawText(asciiSafe(label), { x: m, y, size: 10, font: fontBold });
+    page.drawText(asciiSafe(value || '-'), { x: m + 150, y, size: 10, font });
+    y -= 13;
+  };
+
+  // 1. DATE GENERALE
+  section('1', 'Date generale');
+  kv('Beneficiar:', (v('ben_nume').value || '').toUpperCase());
+  kv('CNP:', v('ben_cnp').value);
+  kv('Adresa obiectiv:', v('ben_adr').value);
+  kv('POD:', v('pod').value);
+  kv('Nr. ATR:', `${v('atr_nr').value || '-'} din ${fmtRomDate(v('atr_data').value)}`);
+  kv('Operator distributie:', v('atr_od').value);
+  kv('Firma executanta:', company.nume);
+  kv('Executant autorizat:', `${v('exec_nume').value || '-'}, ANRE ${v('exec_anre').value || '-'}`);
+  kv('Data executiei:', fmtRomDate(v('data_dosar').value));
+  y -= 6;
+
+  // 2. SCOPUL LUCRARII (editabil cu substituții)
+  section('2', 'Scopul lucrarii');
+  const mScop = (state.fields.d4?.mem_scop || '')
+    .replace(/\[PUTERE_EXISTENTA\]/g, v('putere_existenta').value || '-')
+    .replace(/\[PUTERE_SOLICITATA\]/g, v('putere_solicitata').value || '-')
+    .replace(/\[ATR_NR\]/g, v('atr_nr').value || '-')
+    .replace(/\[ATR_DATA\]/g, fmtRomDate(v('atr_data').value))
+    .replace(/\[DESCRIERE LOC CONSUM\]/g, v('ben_adr').value || '-');
+  para(mScop || `Prezenta documentatie tehnica a fost intocmita in vederea obtinerii acordului de punere sub tensiune a instalatiei electrice interioare, pentru un spor de putere de la ${v('putere_existenta').value || '-'} kW la ${v('putere_solicitata').value || '-'} kW (${kvaFromKw(v('putere_existenta').value)} kVA la ${kvaFromKw(v('putere_solicitata').value)} kVA), conform ATR nr. ${v('atr_nr').value || '-'} din ${fmtRomDate(v('atr_data').value)}.`);
+
+  // 3. DESCRIEREA OBIECTIVULUI (editabil liber)
+  section('3', 'Descrierea obiectivului');
+  para(state.fields.d4?.mem_obiectiv || 'Obiectivul este [...descriere editabilă în formular...].');
+
+  // 4. INSTALATIA DE RACORDARE
+  section('4', 'Instalatia de racordare');
+  para(state.fields.d4?.mem_racordare || 'Racordarea se realizeaza la 0,4 kV prin bransament existent. Conform ATR, se inlocuieste disjunctorul si se reprogrameaza contorul.');
+
+  // 5. INSTALATIA DE UTILIZARE (coloana + TGD + circuite)
+  section('5', 'Instalatia de utilizare');
+  para('5.1. Coloana principala si tabloul electric general (TGD):', { bold: true });
+  const mTGD = state.fields.d4?.mem_tgd_circuite || '';
+  // Format text — păstrăm liniile așa cum le-a editat user-ul
+  mTGD.split('\n').forEach(line => {
+    ensureSpace(14);
+    page.drawText(asciiSafe(line), { x: m, y, size: 9, font }); y -= 12;
+  });
+  y -= 6;
+
+  para('5.2. Protectii:', { bold: true });
+  para('Toate circuitele sunt protejate cu intrerupatoare automate cu diferential avand curentul de defect Id=30mA, asigurand protectia impotriva electrocutarii prin atingere indirecta. Protectia impotriva suprasarcinii si scurtcircuitului este asigurata prin intrerupatoarele automate magnetotermice aferente fiecarui circuit. Circuitele de curenti slabi nu necesita diferential.');
+
+  para('5.3. Instalatia de protectie prin legare la pamant:', { bold: true });
+  const masurata = v('pram_priza_masurata').value || '-';
+  const calculata = v('pram_priza_calculata').value || '-';
+  para(`Instalatia de protectie prin legare la pamant este realizata conform normativului I7-2011. Rezistenta de dispersie a prizei de pamant masurata este de ${masurata} Ohm, calculata ${calculata} Ohm, valoare care se incadreaza in limita admisa de maximum 4 Ohm conform STAS 12604.`);
+
+  // 6. INCADRAREA INCAPERILOR (standard)
+  section('6', 'Incadrarea incaperilor');
+  para('Incaperile au fost clasificate conform Normativului I7-2011: incaperile uscate (dormitoare, living, holuri, bucatarie) sunt incadrate in categoria BE1a (mediu normal), iar grupurile sanitare si baile sunt incadrate in categoria BE2 (mediu umed), cu respectarea zonelor de protectie conform SR EN 60364-7-701. Vezi tabelul detaliat in documentul nr. 5.');
+
+  // 7. MATERIALE (standard)
+  section('7', 'Materiale si echipamente utilizate');
+  para('Toate materialele si echipamentele utilizate sunt noi, certificate CE, achizitionate pe cale legala. Cablurile folosite sunt de tip CYY-F (3x1,5 mmp pentru iluminat si 3x2,5 mmp pentru prize), rezistente la foc, montate ingropat in pereti si plansee. Coloana principala este realizata cu cablu 5x6 mmp CYY-F. Aparatajul electric este de tip Schneider Electric / echivalent.');
+
+  // 8. CONCLUZII (editabil)
+  section('8', 'Concluzii');
+  para(state.fields.d4?.mem_concluzii || 'Instalatia electrica interioara a fost executata cu respectarea prevederilor Normativului I7-2011, a normelor de protectia muncii si PSI in vigoare. Instalatia corespunde din punct de vedere tehnic si indeplineste conditiile pentru punerea sub tensiune.');
+
+  // Semnături
+  ensureSpace(80);
+  y -= 14;
+  page.drawText('Intocmit,', { x: m, y, size: 10, font: fontBold }); y -= 13;
+  page.drawText(asciiSafe(company.nume), { x: m, y, size: 10, font: fontBold }); y -= 13;
+  page.drawText(asciiSafe(`${v('exec_nume').value || ''} - Electrician autorizat ANRE ${v('exec_anre').value || ''}`), { x: m, y, size: 10, font }); y -= 13;
+  if (v('firma_atestate').value) { page.drawText(asciiSafe(`Atestate ANRE: ${v('firma_atestate').value}`), { x: m, y, size: 9, font, color: rgb(0.4,0.4,0.4) }); y -= 13; }
+  page.drawText(asciiSafe(`Data: ${fmtRomDate(v('data_dosar').value)}`), { x: m, y, size: 9, font }); y -= 13;
+  page.drawText('Semnatura si stampila: _______________________', { x: m, y, size: 9, font });
+
+  drawFooter(page, font, num, DOCS_DEF.length);
+}
+
+// ── 5. TABEL CU CLASIFICAREA ÎNCĂPERILOR — tabel formatat ─────────────────
+async function drawTabelIncaperi(pdf, font, fontBold, d, num) {
+  let page = addPageWithFooter(pdf, num);
+  const { width, height } = page.getSize();
+  const m = 40;
+  let y = height - m;
+
+  // Titlu
+  page.drawText('TABEL CU CLASIFICAREA INCAPERILOR', { x: width/2 - 130, y, size: 13, font: fontBold }); y -= 14;
+  page.drawText('conform Normativ I7-2011', { x: width/2 - 70, y, size: 10, font, color: rgb(0.4,0.4,0.4) }); y -= 22;
+
+  // Antet info beneficiar
+  page.drawText(asciiSafe(`Beneficiar: ${(v('ben_nume').value || '-').toUpperCase()}`), { x: m, y, size: 10, font }); y -= 13;
+  page.drawText(asciiSafe(`Adresa: ${v('ben_adr').value || '-'}`), { x: m, y, size: 10, font }); y -= 13;
+  page.drawText(asciiSafe(`Nr. ATR: ${v('atr_nr').value || '-'} din ${fmtRomDate(v('atr_data').value)}`), { x: m, y, size: 10, font }); y -= 18;
+
+  // Header tabel
+  const cols = [
+    { label: 'Nr.',          w: 30 },
+    { label: 'Denumire incapere', w: 130 },
+    { label: 'Suprafata',    w: 55 },
+    { label: 'Mediu',        w: 55 },
+    { label: 'Umiditate',    w: 55 },
+    { label: 'Clasificare',  w: 65 },
+    { label: 'Observatii',   w: 125 }
+  ];
+  // Total: 30+130+55+55+55+65+125 = 515 (encaps în width-2*m = 515 OK pentru A4)
+  const drawTableRow = (cells, opts) => {
+    const isHeader = !!opts?.header;
+    let cx = m;
+    const rowH = 18;
+    cells.forEach((cell, i) => {
+      const col = cols[i];
+      // Bordura
+      page.drawRectangle({ x: cx, y: y - rowH + 2, width: col.w, height: rowH,
+        borderColor: rgb(0,0,0), borderWidth: 0.5, color: isHeader ? rgb(0.92,0.92,0.92) : rgb(1,1,1) });
+      // Text
+      page.drawText(asciiSafe(String(cell)), { x: cx + 4, y: y - 12, size: isHeader ? 9 : 8.5,
+        font: isHeader ? fontBold : font, color: rgb(0,0,0) });
+      cx += col.w;
+    });
+    y -= rowH;
+  };
+
+  drawTableRow(cols.map(c => c.label), { header: true });
+
+  // Datele
+  const lines = (state.fields.d5?.tabel_incaperi || '').split('\n').map(l => l.trim()).filter(Boolean);
+  lines.forEach((line, idx) => {
+    if (y < 100) { drawFooter(page, font, num, DOCS_DEF.length); page = pdf.addPage(PageSizes.A4); y = height - m; drawTableRow(cols.map(c => c.label), { header: true }); }
+    // Parse: "Denumire | Suprafata | Mediu | Umiditate | Clasificare | Obs"
+    const parts = line.split('|').map(p => p.trim());
+    drawTableRow([
+      idx + 1,
+      parts[0] || '-',
+      parts[1] || '-',
+      parts[2] || '-',
+      parts[3] || '-',
+      parts[4] || '-',
+      parts[5] || '-'
+    ]);
+  });
+  y -= 16;
+
+  // Legenda
+  if (y < 100) { drawFooter(page, font, num, DOCS_DEF.length); page = pdf.addPage(PageSizes.A4); y = height - m; }
+  page.drawText('Legenda clasificare incaperi (conform I7-2011):', { x: m, y, size: 10, font: fontBold }); y -= 14;
+  const legend = [
+    'BE1a - Incaperi normale (temperatura normala, umiditate normala, fara pericol de explozie sau incendiu)',
+    'BE2  - Incaperi umede (umiditate relativa > 75%, bai, grupuri sanitare)',
+    'BE3  - Incaperi expuse intemperiilor (terase, balcoane neacoperite)'
+  ];
+  legend.forEach(l => { page.drawText(asciiSafe(l), { x: m, y, size: 9, font }); y -= 12; });
+  y -= 18;
+
+  // Semnătură
+  if (y < 60) y = 60;
+  page.drawText(`Data: ${fmtRomDate(v('data_dosar').value)}`, { x: m, y, size: 9, font });
+  page.drawText(asciiSafe(`Intocmit de: ${v('exec_nume').value || '__________________________'}`), { x: m + 120, y, size: 9, font });
+  page.drawText('Stampila si semnatura: ____________', { x: m + 340, y, size: 9, font });
+
+  drawFooter(page, font, num, DOCS_DEF.length);
+}
+
+// ── Fallback pentru orice alt document editabil necunoscut ───────────────
+async function drawGenericEditableDoc(pdf, font, fontBold, d, num) {
   const page = pdf.addPage(PageSizes.A4);
   const { width, height } = page.getSize();
   const m = 50;
@@ -988,42 +1328,29 @@ async function drawEditableDoc(pdf, font, fontBold, d, num) {
 
   const company = COMPANIES[v('branch').value];
   page.drawText(asciiSafe(company.nume), { x: m, y, size: 10, font: fontBold });
-  page.drawText(asciiSafe('Nr. ___ / ' + (v('data_dosar').value || '')), { x: width - m - 130, y, size: 9, font });
+  page.drawText(asciiSafe('Nr. ___ / ' + fmtRomDate(v('data_dosar').value)), { x: width - m - 130, y, size: 9, font });
   y -= 30;
 
   page.drawText(asciiSafe(`${num}. ${d.title.toUpperCase()}`), { x: m, y, size: 14, font: fontBold });
   y -= 22;
 
-  const infoLines = [
+  [
     `Beneficiar: ${v('ben_nume').value || '-'}`,
     `Adresa: ${v('ben_adr').value || '-'}`,
     `POD: ${v('pod').value || '-'}`,
-    `ATR nr. ${v('atr_nr').value || '-'} / ${v('atr_data').value || '-'} (${v('atr_od').value})`,
-    `Putere: ${v('putere_existenta').value || '-'} -> ${v('putere_solicitata').value || '-'} kW`,
-    `Executant: ${v('exec_nume').value || '-'}, ANRE ${v('exec_anre').value || '-'}`
-  ];
-  infoLines.forEach(l => { page.drawText(asciiSafe(l), { x: m, y, size: 10, font }); y -= 13; });
+    `ATR nr. ${v('atr_nr').value || '-'} / ${fmtRomDate(v('atr_data').value)} (${v('atr_od').value})`
+  ].forEach(l => { page.drawText(asciiSafe(l), { x: m, y, size: 10, font }); y -= 13; });
   y -= 8;
-  page.drawLine({ start:{x:m,y}, end:{x:width-m,y}, color: rgb(0.8,0.8,0.8), thickness: 0.5 }); y -= 16;
 
   if (d.fields) for (const f of d.fields) {
-    const value = (state.fields[d.id][f] || v(d.id+'_'+f)?.value || '').trim();
+    const value = (state.fields[d.id][f] || '').trim();
     if (!value) continue;
     page.drawText(asciiSafe(labelForField(f)) + ':', { x: m, y, size: 10, font: fontBold }); y -= 14;
     y = drawWrapped(page, value, { x: m, y, maxWidth: width - 2*m, font, fontSize: 10, lineHeight: 13, color: rgb(0,0,0) });
     y -= 10;
-    if (y < 120) break;
   }
 
-  if (y < 140) y = 140;
-  y = 110;
-  page.drawText('Intocmit,', { x: m, y, size: 10, font: fontBold });
-  page.drawText(asciiSafe(v('exec_nume').value || ''), { x: m, y: y - 32, size: 10, font });
-  page.drawText(asciiSafe('Legitimatie ANRE: ' + (v('exec_anre').value || '')), { x: m, y: y - 46, size: 9, font, color: rgb(0.4,0.4,0.4) });
-  page.drawText('Beneficiar,', { x: width - m - 150, y, size: 10, font: fontBold });
-  page.drawText(asciiSafe(v('ben_nume').value || ''), { x: width - m - 150, y: y - 32, size: 10, font });
-
-  page.drawText(asciiSafe(`Doc ${num}/${DOCS_DEF.length}`), { x: width - m - 60, y: m - 18, size: 8, font, color: rgb(0.5,0.5,0.5) });
+  drawFooter(page, font, num, DOCS_DEF.length);
 }
 
 async function drawGeneratedInternalDoc(pdf, font, fontBold, d, num) {
